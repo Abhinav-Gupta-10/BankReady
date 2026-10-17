@@ -1,0 +1,227 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  passwordHash       String
+  name               String
+  role               String               @default("CUSTOMER") // "CUSTOMER", "ADMIN", "EMPLOYEE"
+  phone              String?
+  preferredBankId    String?
+  preferredBranchId  String?
+  kycSelfReported    String               @default("PENDING") // "VERIFIED", "PENDING", "UNKNOWN"
+  panSelfReported    Boolean              @default(false)
+  isVerified         Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  tasks              CustomerTask[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  verificationLogs   AccountVerificationLog[]
+}
+
+model Bank {
+  id              String                   @id @default(cuid())
+  name            String
+  code            String                   @unique // "SBI", "HDFC", "ICICI", etc.
+  slug            String                   @unique
+  logoUrl         String?
+  websiteUrl      String
+  helplineNumber  String
+  isEnabled       Boolean                  @default(true)
+  createdAt       DateTime                 @default(now())
+
+  branches        Branch[]
+  serviceRules    ServiceRequirementRule[]
+  announcements   Announcement[]
+}
+
+model Branch {
+  id                     String            @id @default(cuid())
+  bankId                 String
+  bank                   Bank              @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  name                   String
+  code                   String
+  ifscCode               String
+  address                String
+  city                   String
+  state                  String
+  pinCode                String
+  contactPhone           String
+  email                  String?
+  openingTime            String            @default("10:00")
+  closingTime            String            @default("16:00")
+  lunchStartTime         String?           @default("14:00")
+  lunchEndTime           String?           @default("14:30")
+  counterStatus          String            @default("All main counters active")
+  isClosedTemporarily    Boolean           @default(false)
+  temporaryClosureReason String?
+  verifiedSource         String            @default("Official Bank Directory")
+  lastVerifiedAt         DateTime          @default(now())
+  createdAt              DateTime          @default(now())
+
+  tasks                  CustomerTask[]
+  announcements          Announcement[]
+  holidays               BranchHoliday[]
+}
+
+model ServiceCategory {
+  id           String           @id @default(cuid())
+  name         String
+  slug         String           @unique
+  description  String
+  iconName     String
+  displayOrder Int              @default(0)
+
+  services     BankingService[]
+}
+
+model BankingService {
+  id                        String                   @id @default(cuid())
+  categoryId                String
+  category                  ServiceCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name                      String
+  slug                      String                   @unique
+  description               String
+  isAvailableOnline         Boolean                  @default(false)
+  onlinePortalUrl           String?
+  officialFormName          String?
+  officialFormUrl           String?
+  branchVisitRequired       Boolean                  @default(true)
+  physicalOriginalsRequired Boolean                  @default(true)
+  minAmount                 Float?
+  maxAmount                 Float?
+  isEnabled                 Boolean                  @default(true)
+  createdAt                 DateTime                 @default(now())
+
+  requirementRules          ServiceRequirementRule[]
+  tasks                     CustomerTask[]
+  announcements             Announcement[]
+}
+
+model ServiceRequirementRule {
+  id                  String          @id @default(cuid())
+  serviceId           String
+  service             BankingService  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bankId              String?
+  bank                Bank?           @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  documentName        String
+  requirementCategory String          @default("MANDATORY") // "MANDATORY", "CONDITIONAL", "OPTIONAL"
+  originalRequired    String          @default("YES") // "YES", "NO", "UNVERIFIED"
+  photocopyCount      String          @default("1")
+  attestationRequired Boolean         @default(true)
+  conditionRule       String?
+  officialSourceUrl   String
+  verificationStatus  String          @default("VERIFIED") // "VERIFIED", "UNVERIFIED", "PENDING_REVIEW"
+  version             Int             @default(1)
+  lastVerifiedAt      DateTime        @default(now())
+}
+
+model CustomerTask {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId       String
+  service         BankingService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  branchId        String?
+  branch          Branch?             @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  status          String              @default("IN_PROGRESS") // "IN_PROGRESS", "READY_FOR_VISIT", "ACTION_REQUIRED", "COMPLETED"
+  readinessScore  Int                 @default(0)
+  userNotes       String?
+  customerAnswers String              @default("{}") // JSON string
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  checklistItems  TaskChecklistItem[]
+}
+
+model TaskChecklistItem {
+  id                  String       @id @default(cuid())
+  taskId              String
+  task                CustomerTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  documentName        String
+  requirementCategory String
+  originalRequired    String
+  photocopyCount      String
+  isChecked           Boolean      @default(false)
+  isFlaggedMissing    Boolean      @default(false)
+  notes               String?
+  officialSourceUrl   String?
+}
+
+model BranchHoliday {
+  id            String   @id @default(cuid())
+  bankId        String?
+  branchId      String?
+  branch        Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  state         String?
+  holidayDate   String   // YYYY-MM-DD
+  name          String
+  description   String?
+  isNational    Boolean  @default(false)
+  isBankHoliday Boolean  @default(true)
+}
+
+model Announcement {
+  id                 String         @id @default(cuid())
+  bankId             String?
+  bank               Bank?          @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  branchId           String?
+  branch             Branch?        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  serviceId          String?
+  service            BankingService? @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  authorId           String
+  title              String
+  message            String
+  sourceUrl          String?
+  verificationStatus String         @default("VERIFIED")
+  status             String         @default("PUBLISHED") // "DRAFT", "PENDING_REVIEW", "PUBLISHED", "EXPIRED", "RETRACTED"
+  effectiveFrom      DateTime       @default(now())
+  effectiveUntil     DateTime?
+  priority           String         @default("NORMAL") // "NORMAL", "URGENT"
+  createdAt          DateTime       @default(now())
+
+  notifications      Notification[]
+}
+
+model Notification {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcementId String?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  title          String
+  message        String
+  linkUrl        String?
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String
+  resourceType String
+  resourceId   String?
+  details      String?
+  createdAt    DateTime @default(now())
+}
+
+model AccountVerificationLog {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceType   String
+  mode          String   // "CUSTOMER_REPORTED", "INTEGRATION_SANDBOX"
+  statusDetails String   // JSON
+  evaluatedAt   DateTime @default(now())
+}
