@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 
+import { STATIC_BANKS } from "@/lib/static-data";
+
 export async function GET() {
   try {
     const banks = await prisma.bank.findMany({
@@ -19,10 +21,13 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({ banks });
+    if (banks.length > 0) {
+      return NextResponse.json({ banks });
+    }
+    return NextResponse.json({ banks: STATIC_BANKS });
   } catch (err: any) {
-    console.error("Error fetching banks:", err);
-    return NextResponse.json({ error: "Failed to fetch banks" }, { status: 500 });
+    console.error("Error fetching banks, using fallback:", err);
+    return NextResponse.json({ banks: STATIC_BANKS });
   }
 }
 

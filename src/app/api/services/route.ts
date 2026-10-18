@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 
+import { STATIC_CATEGORIES } from "@/lib/static-data";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -27,10 +29,13 @@ export async function GET(req: Request) {
       orderBy: { displayOrder: "asc" },
     });
 
-    return NextResponse.json({ categories });
+    if (categories.length > 0) {
+      return NextResponse.json({ categories });
+    }
+    return NextResponse.json({ categories: STATIC_CATEGORIES });
   } catch (err: any) {
-    console.error("Error fetching services:", err);
-    return NextResponse.json({ error: "Failed to fetch services." }, { status: 500 });
+    console.error("Error fetching services, using fallback:", err);
+    return NextResponse.json({ categories: STATIC_CATEGORIES });
   }
 }
 

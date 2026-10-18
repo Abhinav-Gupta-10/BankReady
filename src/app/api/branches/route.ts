@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 
+import { STATIC_BRANCHES } from "@/lib/static-data";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -29,7 +31,7 @@ export async function GET(req: Request) {
       ];
     }
 
-    const branches = await prisma.branch.findMany({
+    let branches = await prisma.branch.findMany({
       where,
       include: {
         bank: {
@@ -43,6 +45,20 @@ export async function GET(req: Request) {
       },
       orderBy: { name: "asc" },
     });
+
+    if (branches.length === 0) {
+      let filtered = [...STATIC_BRANCHES];
+      if (bankId) {
+        filtered = filtered.filter(b => b.bankId === bankId || b.bank.id === bankId || b.bank.code.toLowerCase() === bankId.toLowerCase());
+      }
+      if (city) {
+        filtered = filtered.filter(b => b.city.toLowerCase().includes(city.toLowerCase()));
+      }
+      if (q) {
+        filtered = filtered.filter(b => b.name.toLowerCase().includes(q.toLowerCase()) || b.city.toLowerCase().includes(q.toLowerCase()));
+      }
+      branches = filtered as any;
+    }
 
     // Compute live status
     const now = new Date();
@@ -90,8 +106,18 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ branches: branchesWithStatus });
   } catch (err: any) {
-    console.error("Error fetching branches:", err);
-    return NextResponse.json({ error: "Failed to fetch branches." }, { status: 500 });
+    console.error("Error fetching branches, using fallback:", err);
+    return NextResponse.json({
+      branches: STATIC_BRANCHES.map(b => ({
+        ...b,
+        liveStatus: {
+          isOpen: true,
+          isDuringLunch: false,
+          isHoliday: false,
+          statusLabel: "Open Now",
+        },
+      }))
+    });
   }
 }
 

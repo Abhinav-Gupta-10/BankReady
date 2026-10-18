@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+import { STATIC_HOLIDAYS } from "@/lib/static-data";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -22,9 +24,12 @@ export async function GET(req: Request) {
       orderBy: { holidayDate: "asc" },
     });
 
-    return NextResponse.json({ holidays });
+    if (holidays.length > 0) {
+      return NextResponse.json({ holidays });
+    }
+    return NextResponse.json({ holidays: STATIC_HOLIDAYS });
   } catch (err: any) {
-    console.error("Error fetching holidays:", err);
-    return NextResponse.json({ error: "Failed to fetch holidays." }, { status: 500 });
+    console.error("Error fetching holidays, using fallback:", err);
+    return NextResponse.json({ holidays: STATIC_HOLIDAYS });
   }
 }
