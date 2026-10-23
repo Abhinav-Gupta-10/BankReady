@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ServicesCatalogPage() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -31,9 +33,9 @@ export default function ServicesCatalogPage() {
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#142D4E]">Banking Services Catalog</h1>
+          <h1 className="text-2xl font-bold text-[#142D4E]">{t("services.title", "Banking Services Catalog")}</h1>
           <p className="text-xs text-slate-500">
-            Browse verified regulatory rules, statutory forms, and required document checklists for each banking task.
+            {t("services.subtitle", "Browse verified regulatory rules, statutory forms, and required document checklists for each banking task.")}
           </p>
         </div>
 
@@ -42,7 +44,7 @@ export default function ServicesCatalogPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search services (e.g. withdrawal, kyc, nominee)..."
+            placeholder={t("label.searchServicesPlaceholder", "Search services (e.g. withdrawal, kyc, nominee)...")}
             className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#142D4E]"
           />
         </div>
@@ -50,11 +52,11 @@ export default function ServicesCatalogPage() {
 
       {loading ? (
         <div className="p-12 text-center text-xs text-slate-500 bg-white rounded-xl border border-slate-200">
-          Loading banking services catalog...
+          {t("services.loading", "Loading banking services catalog...")}
         </div>
       ) : filteredCategories.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-xs text-slate-500">
-          No banking services match &quot;{searchQuery}&quot;.
+          {t("services.noResults", "No banking services match your search.")}
         </div>
       ) : (
         <div className="space-y-8">

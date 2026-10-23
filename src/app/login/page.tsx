@@ -4,8 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +29,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Login failed.");
+        setError(data.error || t("val.loginFailed", "Login failed."));
         setLoading(false);
         return;
       }
@@ -40,7 +43,7 @@ export default function LoginPage() {
       }
       router.refresh();
     } catch {
-      setError("An unexpected network error occurred.");
+      setError(t("val.networkError", "An unexpected network error occurred."));
       setLoading(false);
     }
   };
@@ -52,12 +55,12 @@ export default function LoginPage() {
   };
 
   const handleResetData = async () => {
-    setSeedStatus("Resetting demo database...");
+    setSeedStatus(t("val.dbResetting", "Resetting demo database..."));
     try {
       const res = await fetch("/api/seed", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
-        setSeedStatus("Database refreshed with clean demo data!");
+        setSeedStatus(t("val.dbRefreshed", "Database refreshed with clean demo data!"));
       } else {
         setSeedStatus("Seed error: " + (data.error || "Unknown"));
       }
@@ -78,9 +81,9 @@ export default function LoginPage() {
             Bank<span className="text-[#B99A57]">Ready</span>
           </span>
         </Link>
-        <h2 className="text-xl font-bold text-slate-900">Sign in to your account</h2>
+        <h2 className="text-xl font-bold text-slate-900">{t("login.title", "Sign In to BankReady")}</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Access your saved banking tasks, checklists, and personalized readiness alerts.
+          {t("login.subtitle", "Access your pre-visit checklists, saved tasks, and branch alerts")}
         </p>
       </div>
 
@@ -89,7 +92,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
           <span className="text-xs font-bold text-[#142D4E] uppercase tracking-wider flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#18794E]"></span>
-            Test Demo Accounts
+            {t("login.demoHeading", "Test Demo Accounts")}
           </span>
           <button
             type="button"
@@ -97,7 +100,7 @@ export default function LoginPage() {
             className="text-[11px] text-slate-500 hover:text-[#142D4E] underline"
             title="Reset database to original demo records"
           >
-            Reset Demo Data
+            {t("btn.resetDemo", "Reset Demo Data")}
           </button>
         </div>
 
@@ -150,7 +153,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t("label.email", "Email Address")}
+            </label>
             <input
               type="email"
               required
@@ -163,8 +168,12 @@ export default function LoginPage() {
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-semibold text-slate-700">Password</label>
-              <span className="text-[11px] text-slate-500">Min 8 characters</span>
+              <label className="block text-xs font-semibold text-slate-700">
+                {t("label.password", "Password")}
+              </label>
+              <span className="text-[11px] text-slate-500">
+                {t("label.passwordPlaceholder", "Min 8 characters")}
+              </span>
             </div>
             <input
               type="password"
@@ -182,10 +191,10 @@ export default function LoginPage() {
             className="w-full py-2.5 rounded-lg bg-[#142D4E] hover:bg-[#0B1F36] text-white text-sm font-semibold transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <span>Authenticating...</span>
+              <span>{t("btn.loggingIn", "Signing in...")}</span>
             ) : (
               <>
-                <span>Sign In</span>
+                <span>{t("btn.login", "Sign In")}</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
@@ -196,9 +205,9 @@ export default function LoginPage() {
 
         <div className="mt-6 pt-4 border-t border-slate-100 text-center">
           <p className="text-xs text-slate-600">
-            Don&apos;t have an account?{" "}
+            {t("login.noAccount", "Don't have an account?")}{" "}
             <Link href="/register" className="font-semibold text-[#142D4E] hover:underline">
-              Create an Account
+              {t("nav.createAccount", "Create an Account")}
             </Link>
           </p>
         </div>

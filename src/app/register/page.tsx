@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,17 +22,17 @@ export default function RegisterPage() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("val.passMismatch", "Passwords do not match."));
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+      setError(t("val.passMinLen", "Password must be at least 8 characters long."));
       return;
     }
 
     if (!acceptedTerms) {
-      setError("You must accept the terms of service and disclaimer to continue.");
+      setError(t("val.termsRequired", "You must accept the terms of service and disclaimer to continue."));
       return;
     }
 
@@ -45,7 +47,7 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Registration failed.");
+        setError(data.error || t("val.regFailed", "Registration failed."));
         setLoading(false);
         return;
       }
@@ -53,7 +55,7 @@ export default function RegisterPage() {
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("An unexpected network error occurred.");
+      setError(t("val.networkError", "An unexpected network error occurred."));
       setLoading(false);
     }
   };
@@ -69,9 +71,9 @@ export default function RegisterPage() {
             Bank<span className="text-[#B99A57]">Ready</span>
           </span>
         </Link>
-        <h2 className="text-xl font-bold text-slate-900">Create your BankReady account</h2>
+        <h2 className="text-xl font-bold text-slate-900">{t("register.title", "Create Your Account")}</h2>
         <p className="text-xs text-slate-500 mt-1">
-          Save personalized document checklists, track visit readiness, and receive branch updates.
+          {t("register.subtitle", "Save custom pre-visit checklists and track bank requirements")}
         </p>
       </div>
 
@@ -87,63 +89,71 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Full Legal Name</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t("label.fullName", "Full Legal Name")}
+            </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Ramesh Sharma"
-              className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ramesh@example.com"
+              placeholder={t("label.fullNamePlaceholder", "e.g. Ramesh Sharma")}
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Mobile Number <span className="text-slate-400 font-normal">(Optional)</span>
+              {t("label.email", "Email Address")}
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("label.emailPlaceholder", "name@example.com")}
+              className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t("label.phone", "Phone Number")} <span className="text-slate-400 font-normal">({t("label.optional", "Optional")})</span>
             </label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 98765 43210"
+              placeholder={t("label.phonePlaceholder", "10-digit mobile number")}
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                {t("label.password", "Password")}
+              </label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min 8 characters"
+                placeholder={t("label.passwordPlaceholder", "Min 8 characters")}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm Password</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                {t("label.confirmPassword", "Confirm Password")}
+              </label>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-type password"
+                placeholder={t("label.confirmPasswordPlaceholder", "Re-type password")}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#142D4E] focus:border-transparent"
               />
             </div>
@@ -158,7 +168,10 @@ export default function RegisterPage() {
               className="mt-0.5 rounded border-slate-300 text-[#142D4E] focus:ring-[#142D4E]"
             />
             <label htmlFor="terms" className="text-[11px] text-slate-600 leading-tight">
-              I agree that BankReady provides guidance only and does not guarantee that transactions will succeed without official branch verification.
+              {t(
+                "label.termsAgree",
+                "I understand BankReady is an advisory preparation platform and I accept the terms of service and regulatory compliance guidelines."
+              )}
             </label>
           </div>
 
@@ -167,15 +180,15 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full py-2.5 rounded-lg bg-[#B99A57] hover:bg-[#a68847] text-[#0B1F36] text-sm font-bold transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? "Creating Account..." : "Register Account"}
+            {loading ? t("btn.creatingAccount", "Creating Account...") : t("btn.createAccount", "Create Free Customer Account")}
           </button>
         </form>
 
         <div className="mt-6 pt-4 border-t border-slate-100 text-center">
           <p className="text-xs text-slate-600">
-            Already have an account?{" "}
+            {t("register.hasAccount", "Already have an account?")}{" "}
             <Link href="/login" className="font-semibold text-[#142D4E] hover:underline">
-              Sign In
+              {t("register.signIn", "Sign in here")}
             </Link>
           </p>
         </div>

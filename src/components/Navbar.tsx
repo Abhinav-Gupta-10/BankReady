@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { UserSession } from "@/lib/types";
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageSelector from "@/components/LanguageSelector";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -43,13 +45,15 @@ export default function Navbar() {
     }
   };
 
+  const { t } = useLanguage();
+
   const navLinks = [
-    { name: "Services", href: "/services" },
-    { name: "Find Branch", href: "/branches" },
-    { name: "Readiness Wizard", href: "/wizard" },
-    { name: "Account Check", href: "/account-readiness" },
-    { name: "Official Forms", href: "/forms" },
-    { name: "Holidays", href: "/holidays" },
+    { name: t("nav.services", "Services"), href: "/services" },
+    { name: t("nav.branches", "Find Branch"), href: "/branches" },
+    { name: t("nav.wizard", "Readiness Wizard"), href: "/wizard" },
+    { name: t("nav.accountCheck", "Account Check"), href: "/account-readiness" },
+    { name: t("nav.forms", "Official Forms"), href: "/forms" },
+    { name: t("nav.holidays", "Holidays"), href: "/holidays" },
   ];
 
   return (
@@ -67,7 +71,9 @@ export default function Navbar() {
               <span className="text-xl font-bold tracking-tight text-white flex items-center gap-1">
                 Bank<span className="text-[#B99A57]">Ready</span>
               </span>
-              <span className="text-[10px] text-slate-300 tracking-wider uppercase font-medium">Pre-Visit Banking Platform</span>
+              <span className="text-[10px] text-slate-300 tracking-wider uppercase font-medium">
+                {t("nav.tagline", "Pre-Visit Banking Platform")}
+              </span>
             </div>
           </Link>
 
@@ -91,8 +97,11 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right Action / Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Right Action / Language Selector / Auth Buttons */}
+          <div className="hidden md:flex items-center gap-2.5">
+            {/* Language Selector */}
+            <LanguageSelector variant="navbar" />
+
             {/* Notification Bell */}
             <Link
               href="/notifications"
@@ -130,7 +139,7 @@ export default function Navbar() {
                     href="/admin"
                     className="px-3 py-1.5 rounded-md bg-[#B99A57] text-[#0B1F36] text-sm font-semibold hover:bg-[#a68847] transition-colors"
                   >
-                    Admin Portal
+                    {t("nav.adminPortal", "Admin Portal")}
                   </Link>
                 )}
 
@@ -139,7 +148,7 @@ export default function Navbar() {
                     href="/employee"
                     className="px-3 py-1.5 rounded-md bg-[#B99A57] text-[#0B1F36] text-sm font-semibold hover:bg-[#a68847] transition-colors"
                   >
-                    Staff Portal
+                    {t("nav.staffPortal", "Staff Portal")}
                   </Link>
                 )}
 
@@ -147,7 +156,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   className="px-3 py-1.5 rounded-md text-sm text-slate-300 hover:text-white hover:bg-[#0B1F36] transition-colors"
                 >
-                  Logout
+                  {t("nav.logout", "Logout")}
                 </button>
               </div>
             ) : (
@@ -156,13 +165,13 @@ export default function Navbar() {
                   href="/login"
                   className="px-3.5 py-1.5 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-[#0B1F36] transition-colors"
                 >
-                  Login
+                  {t("nav.login", "Login")}
                 </Link>
                 <Link
                   href="/register"
                   className="px-3.5 py-1.5 rounded-md text-sm font-semibold bg-[#B99A57] text-[#0B1F36] hover:bg-[#a68847] transition-colors shadow-sm"
                 >
-                  Create Account
+                  {t("nav.createAccount", "Create Account")}
                 </Link>
               </div>
             )}
@@ -170,6 +179,8 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center gap-2">
+            <LanguageSelector variant="navbar" className="scale-90" />
+
             <Link
               href="/notifications"
               className="relative p-2 text-slate-200"
@@ -202,7 +213,12 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0B1F36] border-b border-slate-700 px-4 pt-2 pb-4 space-y-1">
+        <div className="md:hidden bg-[#0B1F36] border-b border-slate-700 px-4 pt-2 pb-4 space-y-2">
+          {/* Mobile Language Selector */}
+          <div className="py-2">
+            <LanguageSelector variant="mobile" />
+          </div>
+
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -222,7 +238,7 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block px-3 py-2 rounded-md text-base font-medium text-white bg-[#142D4E]"
                 >
-                  Dashboard ({user.name})
+                  {t("nav.dashboard", "Dashboard")} ({user.name})
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
@@ -230,7 +246,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2 rounded-md text-base font-medium bg-[#B99A57] text-[#0B1F36]"
                   >
-                    Admin Portal
+                    {t("nav.adminPortal", "Admin Portal")}
                   </Link>
                 )}
                 {user.role === "EMPLOYEE" && (
@@ -239,7 +255,7 @@ export default function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-3 py-2 rounded-md text-base font-medium bg-[#B99A57] text-[#0B1F36]"
                   >
-                    Staff Portal
+                    {t("nav.staffPortal", "Staff Portal")}
                   </Link>
                 )}
                 <button
@@ -249,7 +265,7 @@ export default function Navbar() {
                   }}
                   className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-300 hover:bg-[#142D4E]"
                 >
-                  Logout
+                  {t("nav.logout", "Logout")}
                 </button>
               </>
             ) : (
@@ -259,14 +275,14 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block text-center px-4 py-2 rounded-md text-base font-medium text-white bg-[#142D4E]"
                 >
-                  Login
+                  {t("nav.login", "Login")}
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block text-center px-4 py-2 rounded-md text-base font-medium bg-[#B99A57] text-[#0B1F36] font-semibold"
                 >
-                  Create Account
+                  {t("nav.createAccount", "Create Account")}
                 </Link>
               </div>
             )}

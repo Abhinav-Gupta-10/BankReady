@@ -1,7 +1,12 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function FormsDirectoryPage() {
+  const { t } = useLanguage();
+
   const forms = [
     {
       formName: "Form 60 (Income Tax Declaration)",
@@ -68,9 +73,11 @@ export default function FormsDirectoryPage() {
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#142D4E]">Official Bank Forms & Online Services</h1>
+        <h1 className="text-2xl font-bold text-[#142D4E]">
+          {t("forms.title", "Official Indian Banking Forms Directory")}
+        </h1>
         <p className="text-xs text-slate-500">
-          Verified statutory forms, pre-visit instructions, and official online banking links.
+          {t("forms.subtitle", "Download authentic government and bank declaration forms before visiting the branch")}
         </p>
       </div>
 
@@ -92,11 +99,15 @@ export default function FormsDirectoryPage() {
                     ? "bg-amber-50 text-amber-800 border border-amber-200"
                     : "bg-emerald-50 text-emerald-800 border border-emerald-200"
                 }`}>
-                  {form.branchVerificationRequired ? "Branch Verification Required" : "Online Eligible"}
+                  {form.branchVerificationRequired
+                    ? t("label.branchVerification", "Branch Verification Required")
+                    : t("status.onlineEligible", "Online Eligible")}
                 </span>
 
                 <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">
-                  {form.physicalSignatureRequired ? "Physical Signature Needed" : "Digital OTP Eligible"}
+                  {form.physicalSignatureRequired
+                    ? t("label.physicalSignature", "Physical Signature Needed")
+                    : t("status.digitalOtp", "Digital OTP Eligible")}
                 </span>
               </div>
             </div>
@@ -105,11 +116,15 @@ export default function FormsDirectoryPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-100">
               <div>
-                <span className="font-bold text-slate-700 block text-[11px]">Supporting Documents Required:</span>
+                <span className="font-bold text-slate-700 block text-[11px]">
+                  {t("label.supportingDocs", "Supporting Documents Required")}:
+                </span>
                 <span className="text-slate-600">{form.supportingDocs}</span>
               </div>
               <div>
-                <span className="font-bold text-slate-700 block text-[11px]">Pre-Visit Preparation:</span>
+                <span className="font-bold text-slate-700 block text-[11px]">
+                  {t("label.instructions", "Pre-Visit Preparation")}:
+                </span>
                 <span className="text-slate-600">{form.instructions}</span>
               </div>
             </div>
@@ -125,7 +140,7 @@ export default function FormsDirectoryPage() {
                     rel="noopener noreferrer"
                     className="px-3.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    Download Official PDF ↗
+                    {t("btn.downloadPdf", "Download Official PDF ↗")}
                   </a>
                 ) : (
                   <span className="text-xs text-slate-400">No physical download needed</span>
@@ -138,7 +153,7 @@ export default function FormsDirectoryPage() {
                     rel="noopener noreferrer"
                     className="px-3.5 py-1.5 rounded-lg bg-[#142D4E] hover:bg-[#0B1F36] text-white text-xs font-bold transition-colors"
                   >
-                    Open Online Portal ↗
+                    {t("btn.onlinePortal", "Open Online Portal ↗")}
                   </a>
                 ) : (
                   <span className="text-xs text-slate-400">In-branch only</span>

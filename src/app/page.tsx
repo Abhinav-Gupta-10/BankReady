@@ -1,8 +1,12 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function LandingPage() {
+  const { t } = useLanguage();
   const commonServices = [
     {
       title: "Cash Withdrawal (>= ₹50,000)",
@@ -97,18 +101,18 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0B1F36] border border-[#B99A57]/40 text-[#B99A57] text-xs font-semibold tracking-wide uppercase shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#18794E]"></span>
-            Pre-Branch Banking Verification Platform
+            {t("nav.tagline", "Pre-Branch Banking Verification Platform")}
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Know Before You Go <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-[#B99A57]">
-              to the Bank.
-            </span>
+            {t("home.heroTitle", "Never Get Turned Away at the Bank Counter Again.")}
           </h1>
 
           <p className="max-w-3xl mx-auto text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            Check required documents, prepare your banking tasks, review real-time branch opening hours, lunch breaks, and understand potential regulatory constraints before leaving home.
+            {t(
+              "home.heroSubtitle",
+              "Verify required documents, calculate cash withdrawal thresholds under IT Rule 114B, check real-time branch hours, lunch breaks, and holidays before you step out."
+            )}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -116,7 +120,7 @@ export default function LandingPage() {
               href="/wizard"
               className="w-full sm:w-auto px-7 py-3.5 rounded-lg bg-[#B99A57] text-[#0B1F36] font-bold text-base hover:bg-[#a68847] transition-all shadow-md flex items-center justify-center gap-2"
             >
-              <span>Check My Banking Requirements</span>
+              <span>{t("home.ctaWizard", "Check My Banking Requirements")}</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
@@ -126,7 +130,7 @@ export default function LandingPage() {
               href="/branches"
               className="w-full sm:w-auto px-7 py-3.5 rounded-lg bg-[#0B1F36] border border-slate-700 text-white font-semibold text-base hover:bg-[#0B1F36]/80 transition-all flex items-center justify-center gap-2"
             >
-              <span>Find a Bank Branch</span>
+              <span>{t("home.ctaBranches", "Find a Bank Branch")}</span>
             </Link>
           </div>
 

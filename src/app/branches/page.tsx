@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function BranchesPage() {
+  const { t } = useLanguage();
   const [branches, setBranches] = useState<any[]>([]);
   const [banks, setBanks] = useState<any[]>([]);
   const [selectedBankId, setSelectedBankId] = useState("");
@@ -82,9 +84,11 @@ export default function BranchesPage() {
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#142D4E]">Bank & Branch Directory</h1>
+        <h1 className="text-2xl font-bold text-[#142D4E]">
+          {t("branches.title", "Bank & Branch Directory")}
+        </h1>
         <p className="text-xs text-slate-500">
-          Find verified branch opening hours, lunch counters, IFSC codes, and contact details.
+          {t("branches.subtitle", "Find verified branch opening hours, lunch counters, IFSC codes, and contact details.")}
         </p>
       </div>
 
@@ -92,13 +96,15 @@ export default function BranchesPage() {
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Filter by Bank</label>
+            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+              {t("label.selectBank", "Filter by Bank")}
+            </label>
             <select
               value={selectedBankId}
               onChange={(e) => setSelectedBankId(e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#142D4E]"
             >
-              <option value="">All Banks</option>
+              <option value="">{t("label.allBanks", "All Banks")}</option>
               {banks.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -106,23 +112,27 @@ export default function BranchesPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Filter by City</label>
+            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+              {t("label.city", "Filter by City")}
+            </label>
             <input
               type="text"
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              placeholder="e.g. New Delhi, Mumbai, Bengaluru"
+              placeholder={t("label.cityPlaceholder", "e.g. Kanpur, New Delhi, Mumbai")}
               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#142D4E]"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Search Keywords</label>
+            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+              {t("btn.search", "Search Keywords")}
+            </label>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Branch name, IFSC, PIN code..."
+              placeholder={t("label.searchBranchPlaceholder", "Branch name, IFSC, PIN code...")}
               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#142D4E]"
             />
           </div>
@@ -132,7 +142,7 @@ export default function BranchesPage() {
               type="submit"
               className="w-full py-2 rounded-lg bg-[#142D4E] hover:bg-[#0B1F36] text-white text-xs font-bold transition-all shadow-sm"
             >
-              Search Branches
+              {t("btn.search", "Search Branches")}
             </button>
           </div>
         </form>
@@ -154,7 +164,7 @@ export default function BranchesPage() {
               onClick={() => fetchBranches(currentPage - 1)}
               className="px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 transition-colors shadow-2xs"
             >
-              Previous
+              {t("btn.previous", "Previous")}
             </button>
             <span className="px-2 font-medium text-slate-700">
               Page {currentPage} of {totalPages}
@@ -165,7 +175,7 @@ export default function BranchesPage() {
               onClick={() => fetchBranches(currentPage + 1)}
               className="px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 transition-colors shadow-2xs"
             >
-              Next
+              {t("btn.next", "Next")}
             </button>
           </div>
         )}
@@ -178,7 +188,9 @@ export default function BranchesPage() {
         </div>
       ) : branches.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-xs text-slate-500 space-y-2">
-          <p className="font-semibold text-slate-700 text-sm">No branches found matching your search criteria.</p>
+          <p className="font-semibold text-slate-700 text-sm">
+            {t("branches.noResults", "No branches found matching your search criteria.")}
+          </p>
           <p>Try clearing filters or search for major metropolitan cities.</p>
         </div>
       ) : (

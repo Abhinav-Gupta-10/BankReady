@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function BankHolidaysPage() {
+  const { t } = useLanguage();
   const [holidays, setHolidays] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,23 +21,23 @@ export default function BankHolidaysPage() {
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#142D4E]">Bank Holidays & Operating Calendar</h1>
+        <h1 className="text-2xl font-bold text-[#142D4E]">{t("holidays.title", "Bank Holidays & Operating Calendar")}</h1>
         <p className="text-xs text-slate-500">
-          Scheduled gazetted bank holidays, 2nd & 4th Saturday closures, and exceptional branch operating hours under the Negotiable Instruments Act.
+          {t("holidays.subtitle", "Scheduled gazetted bank holidays, 2nd & 4th Saturday closures, and exceptional branch operating hours under the Negotiable Instruments Act.")}
         </p>
       </div>
 
       {/* Statutory Rule Explainer Banner */}
       <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 space-y-1">
-        <span className="font-bold block">Reserve Bank of India Weekend Closure Mandate:</span>
+        <span className="font-bold block">{t("holidays.bannerTitle", "Reserve Bank of India Weekend Closure Mandate:")}</span>
         <p className="leading-relaxed">
-          All commercial banks in India (public and private sector) are <strong>closed on Sundays</strong> and on the <strong>2nd and 4th Saturdays</strong> of every month. Banks remain open for customer service on the <strong>1st, 3rd, and 5th Saturdays</strong> (subject to state festival declarations).
+          {t("holidays.bannerDesc", "All commercial banks in India (public and private sector) are closed on Sundays and on the 2nd and 4th Saturdays of every month. Banks remain open for customer service on the 1st, 3rd, and 5th Saturdays.")}
         </p>
       </div>
 
       {/* Holidays List */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <h2 className="text-base font-bold text-[#142D4E]">Scheduled Bank Holidays (2026)</h2>
+        <h2 className="text-base font-bold text-[#142D4E]">{t("holidays.listTitle", "Scheduled Bank Holidays (2026)")}</h2>
 
         {loading ? (
           <div className="py-8 text-center text-xs text-slate-500">Loading holiday calendar...</div>
