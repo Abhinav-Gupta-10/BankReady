@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
       return NextResponse.json(
-        { error: "A valid email address is required." },
+        { error: "A valid email address is required (e.g. name@example.com)." },
         { status: 400 }
       );
     }
@@ -52,7 +52,6 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
 
     // CRITICAL SECURITY RULE: Public registration strictly creates CUSTOMER accounts.
-    // Privileged roles (ADMIN, EMPLOYEE) cannot be self-assigned via public registration.
     const userRole = "CUSTOMER";
 
     const user = await prisma.user.create({
@@ -76,14 +75,19 @@ export async function POST(req: Request) {
 
     await setSessionCookie(sessionPayload);
 
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "USER_REGISTER",
-        resourceType: "AUTH",
-        details: `Registered new CUSTOMER account for ${normalizedEmail}`,
-      },
-    });
+    // Record audit log safely (non-fatal)
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: "USER_REGISTER",
+          resourceType: "AUTH",
+          details: `Registered new CUSTOMER account for ${normalizedEmail}`,
+        },
+      });
+    } catch (auditErr) {
+      console.warn("Non-fatal audit log warning:", auditErr);
+    }
 
     return NextResponse.json({
       success: true,
@@ -101,9 +105,11 @@ export async function POST(req: Request) {
     }
     console.error("Registration error:", err);
     return NextResponse.json(
-      { error: "An unexpected error occurred during registration." },
+      { 
+        error: "An unexpected error occurred during registration.",
+        details: err?.message || String(err)
+      },
       { status: 500 }
     );
   }
 }
-

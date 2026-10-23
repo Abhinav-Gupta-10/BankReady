@@ -57,15 +57,19 @@ export async function POST(req: Request) {
 
     await setSessionCookie(sessionPayload);
 
-    // Record audit log
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "USER_LOGIN",
-        resourceType: "AUTH",
-        details: `Successful login for ${user.email} (${user.role})`,
-      },
-    });
+    // Record audit log safely (non-fatal)
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: "USER_LOGIN",
+          resourceType: "AUTH",
+          details: `Successful login for ${user.email} (${user.role})`,
+        },
+      });
+    } catch (auditErr) {
+      console.warn("Non-fatal audit log warning:", auditErr);
+    }
 
     return NextResponse.json({
       success: true,
@@ -74,7 +78,10 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("Login error:", err);
     return NextResponse.json(
-      { error: "An unexpected error occurred during login." },
+      { 
+        error: "An unexpected error occurred during login.",
+        details: err?.message || String(err)
+      },
       { status: 500 }
     );
   }
