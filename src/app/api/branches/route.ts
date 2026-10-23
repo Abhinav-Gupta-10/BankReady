@@ -9,42 +9,94 @@ import { STATIC_BRANCHES } from "@/lib/static-data";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
     const bankId = searchParams.get("bankId");
     const city = searchParams.get("city");
     const state = searchParams.get("state");
     const pinCode = searchParams.get("pinCode");
     const q = searchParams.get("q");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const isAll = searchParams.get("all") === "true";
+    const requestedLimit = parseInt(searchParams.get("limit") || "60", 10);
+    const limit = isAll ? 1000 : Math.min(Math.max(requestedLimit, 1), 200);
+    const skip = isAll ? 0 : (Math.max(page, 1) - 1) * limit;
 
-    const where: any = {};
-    if (bankId) where.bankId = bankId;
-    if (city) where.city = { contains: city };
-    if (state) where.state = { contains: state };
-    if (pinCode) where.pinCode = { contains: pinCode };
+    const conditions: any[] = [];
 
-    if (q) {
-      where.OR = [
-        { name: { contains: q } },
-        { ifscCode: { contains: q } },
-        { city: { contains: q } },
-        { address: { contains: q } },
-        { pinCode: { contains: q } },
-      ];
+    if (id) {
+      conditions.push({ id });
     }
 
-    let branches = await prisma.branch.findMany({
-      where,
-      include: {
-        bank: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            logoUrl: true,
+    if (bankId) {
+      const bank = await prisma.bank.findFirst({
+        where: {
+          OR: [
+            { id: bankId },
+            { code: bankId.toUpperCase() },
+            { slug: bankId.toLowerCase() },
+          ],
+        },
+        select: { id: true },
+      });
+      conditions.push({ bankId: bank ? bank.id : bankId });
+    }
+
+    if (city) {
+      const cTrim = city.trim();
+      conditions.push({
+        OR: [
+          { city: { contains: cTrim } },
+          { address: { contains: cTrim } },
+        ],
+      });
+    }
+
+    if (state) {
+      conditions.push({ state: { contains: state.trim() } });
+    }
+
+    if (pinCode) {
+      conditions.push({ pinCode: { contains: pinCode.trim() } });
+    }
+
+    if (q) {
+      const qTrim = q.trim();
+      conditions.push({
+        OR: [
+          { name: { contains: qTrim } },
+          { ifscCode: { contains: qTrim.toUpperCase() } },
+          { city: { contains: qTrim } },
+          { state: { contains: qTrim } },
+          { address: { contains: qTrim } },
+          { pinCode: { contains: qTrim } },
+        ],
+      });
+    }
+
+    const where = conditions.length > 0 ? { AND: conditions } : {};
+
+    const [totalCount, fetchedBranches] = await Promise.all([
+      prisma.branch.count({ where }),
+      prisma.branch.findMany({
+        where,
+        take: limit,
+        skip,
+        include: {
+          bank: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              logoUrl: true,
+            },
           },
         },
-      },
-      orderBy: { name: "asc" },
-    });
+        orderBy: [{ bank: { name: "asc" } }, { name: "asc" }],
+      }),
+    ]);
+
+    let branches = fetchedBranches;
+    let effectiveTotal = totalCount;
 
     if (branches.length === 0) {
       let filtered = [...STATIC_BRANCHES];
@@ -58,6 +110,7 @@ export async function GET(req: Request) {
         filtered = filtered.filter(b => b.name.toLowerCase().includes(q.toLowerCase()) || b.city.toLowerCase().includes(q.toLowerCase()));
       }
       branches = filtered as any;
+      effectiveTotal = branches.length;
     }
 
     // Compute live status
@@ -104,7 +157,15 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({ branches: branchesWithStatus });
+    return NextResponse.json({
+      branches: branchesWithStatus,
+      pagination: {
+        total: effectiveTotal,
+        page,
+        limit,
+        totalPages: Math.ceil(effectiveTotal / limit),
+      },
+    });
   } catch (err: any) {
     console.error("Error fetching branches, using fallback:", err);
     return NextResponse.json({

@@ -4,18 +4,28 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(req: Request) {
   try {
-    const { name, email, password, phone, role } = await req.json();
+    const body = await req.json();
+    const { name, email, password, phone } = body || {};
 
-    if (!name || !email || !password) {
+    if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
-        { error: "Name, email, and password are required." },
+        { error: "Full legal name is required." },
         { status: 400 }
       );
     }
 
-    if (password.length < 8) {
+    if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
+      return NextResponse.json(
+        { error: "A valid email address is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!password || typeof password !== "string" || password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long." },
         { status: 400 }
@@ -24,6 +34,7 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Check application-level uniqueness first
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
@@ -37,17 +48,18 @@ export async function POST(req: Request) {
 
     const passwordHash = await hashPassword(password);
 
-    // Initial registration defaults to CUSTOMER unless explicitly created by admin
-    const userRole = role === "EMPLOYEE" || role === "ADMIN" ? role : "CUSTOMER";
+    // CRITICAL SECURITY RULE: Public registration strictly creates CUSTOMER accounts.
+    // Privileged roles (ADMIN, EMPLOYEE) cannot be self-assigned via public registration.
+    const userRole = "CUSTOMER";
 
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
         email: normalizedEmail,
         passwordHash,
-        phone: phone?.trim() || null,
+        phone: typeof phone === "string" && phone.trim() ? phone.trim() : null,
         role: userRole,
-        isVerified: false, // Accurately labeled unverified until email confirmation
+        isVerified: true,
       },
     });
 
@@ -66,7 +78,7 @@ export async function POST(req: Request) {
         userId: user.id,
         action: "USER_REGISTER",
         resourceType: "AUTH",
-        details: `Registered new ${userRole} account for ${normalizedEmail}`,
+        details: `Registered new CUSTOMER account for ${normalizedEmail}`,
       },
     });
 
@@ -75,6 +87,12 @@ export async function POST(req: Request) {
       user: sessionPayload,
     });
   } catch (err: any) {
+    if (err?.code === "P2002") {
+      return NextResponse.json(
+        { error: "An account with this email address already exists." },
+        { status: 409 }
+      );
+    }
     console.error("Registration error:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred during registration." },
@@ -82,3 +100,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

@@ -6,9 +6,10 @@ import { verifyPassword, setSessionCookie } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const { email, password } = body || {};
 
-    if (!email || !password) {
+    if (!email || typeof email !== "string" || !email.trim() || !password || typeof password !== "string") {
       return NextResponse.json(
         { error: "Email and password are required." },
         { status: 400 }

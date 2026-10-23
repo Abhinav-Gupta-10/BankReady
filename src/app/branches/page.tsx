@@ -12,6 +12,9 @@ export default function BranchesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [preferredId, setPreferredId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Fetch banks
   useEffect(() => {
@@ -32,30 +35,43 @@ export default function BranchesPage() {
       .catch(() => {});
   }, []);
 
-  // Fetch branches with filters
-  const fetchBranches = () => {
+  // Fetch branches with filters and pagination
+  const fetchBranches = (page = 1) => {
     setLoading(true);
     const params = new URLSearchParams();
     if (selectedBankId) params.append("bankId", selectedBankId);
     if (cityFilter) params.append("city", cityFilter);
     if (searchQuery) params.append("q", searchQuery);
+    params.append("page", String(page));
+    params.append("limit", "60");
 
     fetch(`/api/branches?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.branches) setBranches(data.branches);
+        if (data.branches) {
+          setBranches(data.branches);
+          if (data.pagination) {
+            setTotalCount(data.pagination.total);
+            setTotalPages(data.pagination.totalPages);
+            setCurrentPage(data.pagination.page);
+          } else {
+            setTotalCount(data.branches.length);
+            setTotalPages(1);
+            setCurrentPage(1);
+          }
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchBranches();
+    fetchBranches(1);
   }, [selectedBankId, cityFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchBranches();
+    fetchBranches(1);
   };
 
   const handleSetPreferred = (branchId: string) => {
@@ -120,6 +136,39 @@ export default function BranchesPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Pagination & Count Header */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-xs text-xs text-slate-600">
+        <div>
+          Showing <strong className="text-slate-900">{branches.length}</strong> of <strong className="text-slate-900">{totalCount}</strong> verified bank branches
+          {(selectedBankId || cityFilter || searchQuery) && (
+            <span className="text-[#142D4E] font-medium"> (filtered)</span>
+          )}
+        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={currentPage <= 1 || loading}
+              onClick={() => fetchBranches(currentPage - 1)}
+              className="px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 transition-colors shadow-2xs"
+            >
+              Previous
+            </button>
+            <span className="px-2 font-medium text-slate-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => fetchBranches(currentPage + 1)}
+              className="px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold disabled:opacity-40 transition-colors shadow-2xs"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Branches List */}
@@ -223,6 +272,37 @@ export default function BranchesPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Bottom Pagination if multiple pages */}
+      {!loading && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            type="button"
+            disabled={currentPage <= 1 || loading}
+            onClick={() => {
+              fetchBranches(currentPage - 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold disabled:opacity-40 transition-colors shadow-2xs"
+          >
+            ← Previous Page
+          </button>
+          <span className="px-3 text-xs font-medium text-slate-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={currentPage >= totalPages || loading}
+            onClick={() => {
+              fetchBranches(currentPage + 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold disabled:opacity-40 transition-colors shadow-2xs"
+          >
+            Next Page →
+          </button>
         </div>
       )}
     </div>

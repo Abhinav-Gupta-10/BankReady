@@ -28,8 +28,12 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ user: user || session });
+    if (!user) {
+      return NextResponse.json({ user: null });
+    }
+
+    return NextResponse.json({ user });
   } catch {
-    return NextResponse.json({ user: session });
+    return NextResponse.json({ user: null });
   }
 }
