@@ -23,8 +23,18 @@ async function main() {
   await prisma.serviceCategory.deleteMany();
   await prisma.branch.deleteMany();
   await prisma.bank.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.user.deleteMany();
+  // Only clean demo accounts, preserve real registered user accounts
+  await prisma.user.deleteMany({
+    where: {
+      email: {
+        in: [
+          "demo.customer@bankready.test",
+          "demo.admin@bankready.test",
+          "demo.employee@bankready.test",
+        ],
+      },
+    },
+  });
 
   console.log("Cleaned existing records.");
 

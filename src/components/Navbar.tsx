@@ -18,11 +18,11 @@ export default function Navbar() {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
-        if (data.user) {
-          setUser(data.user);
-        }
+        setUser(data?.user || null);
       })
-      .catch(() => {});
+      .catch(() => {
+        setUser(null);
+      });
 
     fetch("/api/notifications?unreadOnly=true")
       .then((res) => res.json())

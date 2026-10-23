@@ -16,13 +16,18 @@ export async function POST(req: Request) {
       );
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Invalid email or password." },
+        { 
+          error: "No account found with this email. Please create an account first.",
+          notRegistered: true 
+        },
         { status: 401 }
       );
     }
@@ -30,7 +35,10 @@ export async function POST(req: Request) {
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       return NextResponse.json(
-        { error: "Invalid email or password." },
+        { 
+          error: "Incorrect password. Please check your password and try again.",
+          wrongPassword: true 
+        },
         { status: 401 }
       );
     }

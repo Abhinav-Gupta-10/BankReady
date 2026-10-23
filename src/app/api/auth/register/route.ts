@@ -41,7 +41,10 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "An account with this email address already exists." },
+        { 
+          error: "An account with this email address already exists. Please sign in instead.",
+          alreadyRegistered: true 
+        },
         { status: 409 }
       );
     }
@@ -89,7 +92,10 @@ export async function POST(req: Request) {
   } catch (err: any) {
     if (err?.code === "P2002") {
       return NextResponse.json(
-        { error: "An account with this email address already exists." },
+        { 
+          error: "An account with this email address already exists. Please sign in instead.",
+          alreadyRegistered: true 
+        },
         { status: 409 }
       );
     }
