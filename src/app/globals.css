@@ -23,6 +23,16 @@ body {
   min-height: 100vh;
 }
 
+svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+header svg {
+  max-width: 28px;
+  max-height: 28px;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

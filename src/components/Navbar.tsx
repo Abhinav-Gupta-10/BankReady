@@ -62,8 +62,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-lg bg-[#0B1F36] border border-[#B99A57]/40 flex items-center justify-center text-[#B99A57] font-bold shadow-sm group-hover:border-[#B99A57] transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-lg bg-[#0B1F36] border border-[#B99A57]/40 flex items-center justify-center text-[#B99A57] font-bold shadow-sm group-hover:border-[#B99A57] transition-colors shrink-0">
+              <svg className="w-5 h-5" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
